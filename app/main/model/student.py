@@ -1,8 +1,10 @@
 from flask_restx import Namespace
-
-api = Namespace('student', description='student related operations')
+from flask_restx import fields
+from werkzeug.datastructures import FileStorage
 
 from .. import db
+
+api = Namespace('student', description='student related operations')
 
 class Student(db.Model):
     __tablename__ = "student"
@@ -19,9 +21,6 @@ class Student(db.Model):
 
     def __repr__(self):
         return "<Student '{}'>".format(self.fullname)
-
-
-from flask_restx import fields
 
 class StudentDto:
     student = api.model('student', {
@@ -48,3 +47,7 @@ class StudentDto:
         'ids': fields.List(required=True, description='student list', cls_or_instance=fields.Integer()),
         'text': fields.String(required=True, description='text to send')
     })
+
+    upload_parser = api.parser()
+    upload_parser.add_argument('student_id', type=int, help='student id', location='args')
+    upload_parser.add_argument('file', type=FileStorage, location='files')

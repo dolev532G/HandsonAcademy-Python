@@ -2,7 +2,8 @@ import datetime
 from app.main import db
 from app.main.model.student import Student
 from typing import Dict, Tuple
-
+from app.main.service.aws_service import upload_file
+from app.main.service.aws_service import create_presigned_url
 from app.main.service.sms_service import send_one_sms
 from app.main.util.fps import get_paginated
 
@@ -79,9 +80,6 @@ def get_all_students(fullname, sat_score_from, sat_score_to, birthdate_from, bir
            "birthdate_from": birthdate_from, "birthdate_to": birthdate_to}
     return get_paginated(fields=fields, from_str=from_str, where_str=where_str, params=params, orderby_field=orderby_field, orderby_direction=orderby_direction , page=page, count=count)
 
-def get_a_student(id):
-    return db.session.query(Student).filter(Student.id == id).first()
-
 
 def delete_student(id: int) -> Tuple[Dict[str, str], int]:
     student = db.session.query(Student).filter(Student.id == id).first()
@@ -108,3 +106,17 @@ def sms_students(ids, text):
         student = db.session.query(Student).filter_by(id=id).first()
         if student:
             send_one_sms(student.phone, text)
+
+
+def upload_student_picture(student_id, uploaded_file):
+    student = db.session.query(Student).filter_by(id=student_id).first()
+    if student:
+        student.picture =  "apps/python/student-" +  str(student_id) + ".png"
+        upload_file(uploaded_file, student.picture)
+        db.session.commit()
+
+def get_a_student(id):
+    student =  db.session.query(Student).filter(Student.id == id).first()
+    if student.picture:
+        student.picture = create_presigned_url(student.picture)
+    return student
