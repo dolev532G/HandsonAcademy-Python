@@ -4,6 +4,7 @@ import unittest
 from app import blueprint
 from app.main import create_app
 from flask_migrate import Migrate, MigrateCommand
+from app.main.model import student_grade
 from app.main import db
 from app.main.model import student
 
